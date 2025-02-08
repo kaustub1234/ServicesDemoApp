@@ -1,17 +1,22 @@
 package com.example.servicesdemoapp
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class MyBoundedService : Service() {
-    private val TAG = javaClass.kotlin.simpleName;
+    private val TAG = "Services_logs";
     private val mBinder = MyServiceBinder()
     private var mPlayer: MediaPlayer? = null
 
@@ -25,13 +30,6 @@ class MyBoundedService : Service() {
         }
     }
 
-    fun startBoundedService() {
-
-    }
-
-    fun stopBoundedService() {
-    }
-
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "ONCREATE CALLED")
@@ -40,15 +38,13 @@ class MyBoundedService : Service() {
         mPlayer!!.setOnCompletionListener {
             val intent = Intent(MUSIC_COMPLETE)
             intent.putExtra(MainActivity.MESSAGE_KEY, "done")
-            LocalBroadcastManager.getInstance(applicationContext)
-                .sendBroadcast(intent)
+            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return super.onStartCommand(intent, flags, startId)
         Log.d(TAG, "ONSTARTCOMMAND CALLED")
 
         when (intent?.action) {
@@ -86,31 +82,53 @@ class MyBoundedService : Service() {
     }
 
     private fun showNotification() {
-        val builder: NotificationCompat.Builder = NotificationCompat.Builder(this, "CHANNEL_ID")
-
+        createNotificationChannel() // Required for Android 8.0+
         //Intent for play button
         val pIntent = Intent(this, MyBoundedService::class.java)
         pIntent.action = MainActivity.MUSIC_SERVICE_ACTION_PLAY
         val playIntent = PendingIntent.getService(this, 100, pIntent, PendingIntent.FLAG_IMMUTABLE)
 
         //Intent for pause button
-        val psIntent =
-            Intent(this, MyBoundedService::class.java)
+        val psIntent = Intent(this, MyBoundedService::class.java)
         psIntent.action = MainActivity.MUSIC_SERVICE_ACTION_PAUSE
-        val pauseIntent = PendingIntent.getService(this, 100, psIntent, PendingIntent.FLAG_IMMUTABLE)
+        val pauseIntent =
+            PendingIntent.getService(this, 100, psIntent, PendingIntent.FLAG_IMMUTABLE)
 
         //Intent for stop button
-        val sIntent =
-            Intent(this, MyBoundedService::class.java)
+        val sIntent = Intent(this, MyBoundedService::class.java)
         sIntent.action = MainActivity.MUSIC_SERVICE_ACTION_STOP
         val stopIntent = PendingIntent.getService(this, 100, sIntent, PendingIntent.FLAG_IMMUTABLE)
-        builder.setContentTitle("This a demo Notification title")
-            .setContentText("This is demo music player")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .addAction(NotificationCompat.Action(android.R.drawable.ic_media_play, "Play", playIntent))
-            .addAction(NotificationCompat.Action(android.R.drawable.ic_media_play, "Pause", pauseIntent))
-            .addAction(NotificationCompat.Action(android.R.drawable.ic_media_play, "Stop", stopIntent))
-        startForeground(123, builder.build())
+
+        val notification = NotificationCompat.Builder(this, "CHANNEL_ID")
+            .setContentTitle("This a demo Notification title")
+            .setContentText("This is demo music player").setSmallIcon(R.mipmap.ic_launcher)
+         .addAction(
+             NotificationCompat.Action(
+                 android.R.drawable.ic_media_play, "Play", playIntent
+             )
+         ).addAction(
+             NotificationCompat.Action(
+                 android.R.drawable.ic_media_play, "Pause", pauseIntent
+             )
+         ).addAction(
+             NotificationCompat.Action(
+                 android.R.drawable.ic_media_play, "Stop", stopIntent
+             )
+         ).build()
+
+        startForeground(123, notification)
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "My Channel"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel("CHANNEL_ID", name, importance)
+
+            val notificationManager =
+                this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 
     override fun onBind(intent: Intent): IBinder {
