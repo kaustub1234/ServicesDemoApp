@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -15,10 +15,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ServicesDemoApp"
         tools:targetApi="31">
+        <activity
+            android:name=".SecondActivity"
+            android:exported="false" />
+
         <service
             android:name=".MyBoundedService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity
             android:name=".MainActivity"

@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     lateinit private var mPlayButton: Button
     lateinit private var btnRun: Button
     lateinit private var btnClear: Button
+    lateinit private var startNewActivityBtn: Button
     lateinit private var mProgressBar: ProgressBar
     lateinit private var mLog: TextView
     lateinit private var mScroll: ScrollView;
@@ -60,30 +61,57 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        Log.d(TAG2, "****** ONCREATE CALLED ******")
+
         mScroll = findViewById<ScrollView>(R.id.scrollLog)
         mLog = findViewById<TextView>(R.id.tvLog)
         mProgressBar = findViewById<ProgressBar>(R.id.progress_bar)
         mPlayButton = findViewById<Button>(R.id.btnPlayMusic)
         btnRun = findViewById<Button>(R.id.btnRun)
         btnClear = findViewById<Button>(R.id.btnClear)
+        startNewActivityBtn = findViewById<Button>(R.id.startNewActivityBtn)
 
         mPlayButton.setOnClickListener(this)
         btnRun.setOnClickListener(this)
         btnClear.setOnClickListener(this)
+        startNewActivityBtn.setOnClickListener(this)
+
     }
 
 
     override fun onStart() {
+        Log.d(TAG2, "****** ONSTART CALLED ******")
         super.onStart()
+    }
+
+    override fun onResume() {
+        Log.d(TAG2, "****** ONRESUME CALLED ******")
+        super.onResume()
+    }
+
+    override fun onPause() {
+        Log.d(TAG2, "****** ONPAUSE CALLED ******")
+        super.onPause()
     }
 
     override fun onStop() {
         super.onStop()
+        Log.d(TAG2, "****** ONSTOP CALLED ******")
         Log.d(TAG, "OnStop called..")
         if (isBounded) {
             unbindService(serviceConnection);
             isBounded = false;
         }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.d(TAG2, "****** ONRESTART CALLED ******")
+    }
+
+    override fun onDestroy() {
+        Log.d(TAG2, "****** ONDESTROY CALLED ******")
+        super.onDestroy()
     }
 
 
@@ -137,6 +165,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                     isBounded = false;
                 }
                 displayProgressBar(false)
+            }
+
+            R.id.startNewActivityBtn -> {
+                val intent = Intent(this@MainActivity, SecondActivity::class.java)
+                startActivity(intent)
             }
         }
     }
